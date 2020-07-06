@@ -103,25 +103,75 @@ public class WebDriverUtils {
                     ScreenshotOf.BROWSER_PAGE));
 		}
 		
-		public void click(By loc) {
+	
+	
+		
+		
+public void click(By loc) {
+try
+{
+find(loc).click();
+}
+catch(WebDriverException e) {
+try
+{
+Actions act = new Actions(driver);
+act.click(find(loc)).perform();
+}
+catch(Exception ex)
+{
+JavascriptExecutor js = (JavascriptExecutor) driver;
+js.executeScript("argument[0].click()", find(loc));
+}
+}
+ATUReports.add("Click at"+loc.toString(), LogAs.PASSED, new
+CaptureScreen(
+                    ScreenshotOf.BROWSER_PAGE));
+}
+
+		public String PageSource()
+		{
+			return driver.getPageSource();
+		}
+		public WebElement find(By loc) {
+			driver.switchTo().defaultContent();
+			WebElement element = null;
 			try
 			{
-				find(loc).click();
+			element = driver.findElement(loc);
+//				wait.until(ExpectedConditions.presenceOfElementLocated(loc));
+//				wait.until(ExpectedConditions.visibilityOfElementLocated(loc));
+//				wait.until(ExpectedConditions.visibilityOf(element));
 			}
-			catch(WebDriverException e) {
-				try
+			catch(NoSuchElementException e)
+			{
+				List<WebElement> frames = driver.findElements(By.tagName("frame"));
+				if(frames.size()==0)
 				{
-					Actions act = new Actions(driver);
-					act.click(find(loc)).perform();
+					frames = driver.findElements(By.tagName("iframe"));
 				}
-				catch(Exception ex)
+				if(frames.size()==0)
 				{
-				JavascriptExecutor js = (JavascriptExecutor) driver;
-				js.executeScript("argument[0].click()", find(loc));
+					ATUReports.add("No Element Found and No Frames Present",loc.toString(), LogAs.FAILED, new CaptureScreen(
+		                    ScreenshotOf.BROWSER_PAGE));
 				}
+				for(WebElement frame:frames)
+				{
+					driver.switchTo().frame(frame);
+					if(driver.findElements(loc).size()>0)
+						return driver.findElement(loc);
+					driver.switchTo().defaultContent();
+				}
+				ATUReports.add("No Element Found Also inside frames",loc.toString(), LogAs.FAILED, new CaptureScreen(
+	                    ScreenshotOf.BROWSER_PAGE));
+				
 			}
-			ATUReports.add("Click at"+loc.toString(), LogAs.PASSED, new CaptureScreen(
-                    ScreenshotOf.BROWSER_PAGE));
+			catch(TimeoutException e)
+			{
+				ATUReports.add("TimeOut Waiting for the Element",loc.toString(), LogAs.FAILED, new CaptureScreen(
+	                    ScreenshotOf.BROWSER_PAGE));
+			}
+			return element;
 		}
 		
 		public void selectByVisibleText(By loc, String value) {
@@ -130,6 +180,8 @@ public class WebDriverUtils {
 			ATUReports.add("Select By Visible Text at "+loc.toString(),value, LogAs.PASSED, new CaptureScreen(
                     ScreenshotOf.BROWSER_PAGE));
 		}
+		
+				
 		
 		public void selectByValue(By loc, String value) {
 			Select obj = new Select(find(loc));
@@ -199,46 +251,6 @@ public class WebDriverUtils {
 		                    ScreenshotOf.BROWSER_PAGE));
 		}
 		
-		private WebElement find(By loc) {
-			driver.switchTo().defaultContent();
-			WebElement element=null;
-			try
-			{
-				element = driver.findElement(loc);
-//				wait.until(ExpectedConditions.presenceOfElementLocated(loc));
-//				wait.until(ExpectedConditions.visibilityOfElementLocated(loc));
-				wait.until(ExpectedConditions.visibilityOf(element));
-			}
-			catch(NoSuchElementException e)
-			{
-				List<WebElement> frames = driver.findElements(By.tagName("frame"));
-				if(frames.size()==0)
-				{
-					frames = driver.findElements(By.tagName("iframe"));
-				}
-				if(frames.size()==0)
-				{
-					ATUReports.add("No Element Found and No Frames Present",loc.toString(), LogAs.FAILED, new CaptureScreen(
-		                    ScreenshotOf.BROWSER_PAGE));
-				}
-				for(WebElement frame:frames)
-				{
-					driver.switchTo().frame(frame);
-					if(driver.findElements(loc).size()>0)
-						return driver.findElement(loc);
-					driver.switchTo().defaultContent();
-				}
-				ATUReports.add("No Element Found Also inside frames",loc.toString(), LogAs.FAILED, new CaptureScreen(
-	                    ScreenshotOf.BROWSER_PAGE));
-				
-			}
-			catch(TimeoutException e)
-			{
-				ATUReports.add("TimeOut Waiting for the Element",loc.toString(), LogAs.FAILED, new CaptureScreen(
-	                    ScreenshotOf.BROWSER_PAGE));
-			}
-			return element;
-		}
 		
 		public void switchFrame(By loc) {
 			driver.switchTo().frame(driver.findElement(loc));

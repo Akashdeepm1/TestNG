@@ -6,9 +6,9 @@
       <class name="com.clearcode.testsuite.TestSuite1">
         <methods>
           <include name="launch"/>
-          <include name="close"/>
+          <include name="NegativeLogin"/>
           <include name="loadUrl"/>
-          <include name="searchPatient"/>
+          <include name="registerUser" invocation-numbers="0"/>
         </methods>
       </class> <!-- com.clearcode.testsuite.TestSuite1 -->
     </classes>
